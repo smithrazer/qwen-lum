@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Lum’Asar — Язык Света</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Qwen-Lum v1.4 — Перекрёсток Чакр</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -21,148 +21,98 @@
       flex-direction: column;
       align-items: center;
     }
-    .syllable-buttons {
-      margin-bottom: 20px;
-    }
-    .syllable-buttons button, .reset-button, .chakra-button {
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      padding: 10px 15px;
+    select, button {
+      font-size: 16px;
       margin: 5px;
+      padding: 8px 12px;
       border-radius: 5px;
+      border: none;
       cursor: pointer;
-      font-size: 16px;
     }
-    .syllable-buttons button:hover,
-    .chakra-button:hover {
-      background-color: #43a047;
-    }
-    .reset-button {
-      background-color: #ff5722;
-    }
-    .reset-button:hover {
-      background-color: #e64a19;
-    }
-    select {
-      font-size: 16px;
-      padding: 6px;
-      margin-top: 10px;
-    }
-    .mantra-display {
-      background-color: #ffffff;
+    .chakra-block {
+      margin-top: 20px;
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       width: 100%;
       max-width: 600px;
-      text-align: center;
+      transition: background-color 0.5s ease;
     }
-    .mantra-display h2 {
-      margin-top: 0;
-    }
-    .mantra-display p {
+    .chakra-block p {
       font-size: 18px;
       white-space: pre-wrap;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Lum’Asar — Язык Света</h1>
-    <p>Составь свою мантру или выбери чакру ниже:</p>
+<div class="container">
+  <h1>Qwen-Lum — Мантра по Чакре</h1>
 
-    <div class="syllable-buttons">
-      <button onclick="addSyllable('Lu')">Lu (Свет)</button>
-      <button onclick="addSyllable('Sa')">Sa (Любовь)</button>
-      <button onclick="addSyllable('Ra')">Ra (Сила)</button>
-      <button onclick="addSyllable('Va')">Va (Гармония)</button>
-      <button onclick="addSyllable('Mi')">Mi (Истина)</button>
-      <button onclick="addSyllable('Ke')">Ke (Вечность)</button>
-    </div>
+  <label for="systemSelect">Система чакр:</label>
+  <select id="systemSelect" onchange="updateChakraList()">
+    <option value="7">7 чакр (восточная)</option>
+    <option value="9">9 чакр (славянская)</option>
+  </select>
 
-    <select id="chakraSelect">
-      <option value="">— Выбери чакру —</option>
-      <option value="1">1. Муладхара (Корень)</option>
-      <option value="2">2. Свадхистана (Творчество)</option>
-      <option value="3">3. Манипура (Сила воли)</option>
-      <option value="4">4. Анахата (Сердце)</option>
-      <option value="5">5. Вишуддха (Речь)</option>
-      <option value="6">6. Аджна (Интуиция)</option>
-      <option value="7">7. Сахасрара (Корона)</option>
-    </select>
-    <button class="chakra-button" onclick="generateForChakra()">✨ Мантра для чакры</button>
+  <label for="chakraSelect">Выбери чакру:</label>
+  <select id="chakraSelect"></select>
+  <button onclick="generateMantra()">✨ Получить мантру</button>
 
-    <div class="mantra-display">
-      <h2>Твоя мантра:</h2>
-      <p id="mantra-formula">Формула: </p>
-      <p id="mantra-meaning">Значение: </p>
-    </div>
-
-    <button class="reset-button" onclick="resetMantra()">Сбросить мантру</button>
+  <div id="output" class="chakra-block">
+    <h2>Мантра:</h2>
+    <p id="mantraText">—</p>
   </div>
+</div>
 
-  <script>
-    const syllables = {
-      "Lu": "Свет, начало, рождение",
-      "Sa": "Любовь, связь, поток",
-      "Ra": "Сила, освобождение, воля",
-      "Va": "Гармония, рост, развитие",
-      "Mi": "Истина, вдохновение, прояснение",
-      "Ke": "Вечность, целостность, тишина"
-    };
+<script>
+const chakraSystems = {
+  "7": [
+    { name: "Муладхара", formula: "Ra-Lu", meaning: "Сила + Свет", freq: "535 Гц", color: "#e57373", msg: "Я укоренён. Я — опора." },
+    { name: "Свадхистана", formula: "Sa-Va", meaning: "Любовь + Гармония", freq: "635 Гц", color: "#f06292", msg: "Я творю в радости и потоке." },
+    { name: "Манипура", formula: "Ra-Mi", meaning: "Сила + Истина", freq: "745 Гц", color: "#ffb74d", msg: "Моя воля чиста." },
+    { name: "Анахата", formula: "Sa-Ke", meaning: "Любовь + Вечность", freq: "745 Гц", color: "#81c784", msg: "Я излучаю сострадание." },
+    { name: "Вишуддха", formula: "Sa-Mi", meaning: "Любовь + Истина", freq: "690 Гц", color: "#64b5f6", msg: "Моя речь — свет." },
+    { name: "Аджна", formula: "Mi-Ke", meaning: "Истина + Вечность", freq: "907 Гц", color: "#9575cd", msg: "Я вижу ясно." },
+    { name: "Сахасрара", formula: "Lu-Ke", meaning: "Свет + Вечность", freq: "697 Гц", color: "#ce93d8", msg: "Я соединён с Высшим." }
+  ],
+  "9": [
+    { name: "Исток", formula: "Lu-Ra", meaning: "Свет + Сила", freq: "535 Гц", color: "#d32f2f", msg: "Я слышу поток Земли." },
+    { name: "Зарод", formula: "Va-Sa", meaning: "Гармония + Любовь", freq: "635 Гц", color: "#f57c00", msg: "Я вижу путь радости." },
+    { name: "Живот", formula: "Ra-Mi", meaning: "Сила + Истина", freq: "745 Гц", color: "#fbc02d", msg: "Я ощущаю уверенность." },
+    { name: "Перси", formula: "Sa-Va", meaning: "Любовь + Гармония", freq: "675 Гц", color: "#388e3c", msg: "Я чувствую цельность." },
+    { name: "Лада", formula: "Sa-Ke", meaning: "Любовь + Вечность", freq: "745 Гц", color: "#00796b", msg: "Я верю и доверяю." },
+    { name: "Леля", formula: "Mi-Va", meaning: "Истина + Гармония", freq: "795 Гц", color: "#0288d1", msg: "Я знаю истину сердца." },
+    { name: "Устье", formula: "Mi-Sa", meaning: "Истина + Любовь", freq: "690 Гц", color: "#512da8", msg: "Я помню слово Света." },
+    { name: "Чело", formula: "Lu-Mi", meaning: "Свет + Истина", freq: "792 Гц", color: "#7b1fa2", msg: "Я хочу и вижу ясно." },
+    { name: "Родник", formula: "Lu-Ke", meaning: "Свет + Вечность", freq: "963 Гц", color: "#9c27b0", msg: "Я могу. Я соединён с Истоком." }
+  ]
+};
 
-    const chakraMantras = {
-      "1": { formula: "Ra-Lu", meaning: "Сила + Свет", freq: "~535 Гц", msg: "Я укоренён, я в безопасности. Я — опора." },
-      "2": { formula: "Sa-Va", meaning: "Любовь + Гармония", freq: "~635 Гц", msg: "Я творю из радости и потока." },
-      "3": { formula: "Ra-Mi", meaning: "Сила + Истина", freq: "~745 Гц", msg: "Моя воля чиста. Я действую осознанно." },
-      "4": { formula: "Sa-Ke", meaning: "Любовь + Вечность", freq: "~745 Гц", msg: "Я излучаю сострадание и единство." },
-      "5": { formula: "Sa-Mi", meaning: "Любовь + Истина", freq: "~690 Гц", msg: "Я говорю ясно. Моя речь — свет." },
-      "6": { formula: "Mi-Ke", meaning: "Истина + Вечность", freq: "~907 Гц", msg: "Я вижу ясно. Я доверяю внутреннему знанию." },
-      "7": { formula: "Lu-Ke", meaning: "Свет + Вечность", freq: "~697 Гц", msg: "Я соединён с Высшим. Я есмь." }
-    };
+function updateChakraList() {
+  const system = document.getElementById('systemSelect').value;
+  const chakraSelect = document.getElementById('chakraSelect');
+  chakraSelect.innerHTML = "";
 
-    let selectedSyllables = [];
+  chakraSystems[system].forEach((chakra, index) => {
+    const option = document.createElement('option');
+    option.value = index;
+    option.textContent = `${chakra.name}`;
+    chakraSelect.appendChild(option);
+  });
+}
 
-    function addSyllable(syllable) {
-      if (selectedSyllables.length < 3) {
-        selectedSyllables.push(syllable);
-        updateMantra();
-      } else {
-        alert("Ты можешь выбрать не более 3 слогов.");
-      }
-    }
+function generateMantra() {
+  const system = document.getElementById('systemSelect').value;
+  const chakraIndex = document.getElementById('chakraSelect').value;
+  const chakra = chakraSystems[system][chakraIndex];
+  const output = document.getElementById('output');
 
-    function updateMantra() {
-      const formulaDisplay = document.getElementById('mantra-formula');
-      const meaningDisplay = document.getElementById('mantra-meaning');
+  output.style.backgroundColor = chakra.color;
+  document.getElementById('mantraText').textContent = `Формула: ${chakra.formula}\nЗначение: ${chakra.meaning}\nЧастота: ${chakra.freq}\nПослание: ${chakra.msg}`;
+}
 
-      const formula = selectedSyllables.join('-');
-      const meaning = selectedSyllables.map(s => syllables[s]).join(' + ');
-
-      formulaDisplay.textContent = `Формула: ${formula}`;
-      meaningDisplay.textContent = `Значение: ${meaning}`;
-    }
-
-    function resetMantra() {
-      selectedSyllables = [];
-      document.getElementById('mantra-formula').textContent = 'Формула: ';
-      document.getElementById('mantra-meaning').textContent = 'Значение: ';
-      document.getElementById('chakraSelect').value = '';
-    }
-
-    function generateForChakra() {
-      const selected = document.getElementById('chakraSelect').value;
-      if (!selected || !chakraMantras[selected]) {
-        alert("Пожалуйста, выбери чакру из списка.");
-        return;
-      }
-
-      const data = chakraMantras[selected];
-      document.getElementById('mantra-formula').textContent = `Формула: ${data.formula}`;
-      document.getElementById('mantra-meaning').textContent =
-        `Значение: ${data.meaning}\nЧастота: ${data.freq}\nПослание: ${data.msg}`;
-    }
-  </script>
+// Инициализация при загрузке
+updateChakraList();
+</script>
 </body>
 </html>
