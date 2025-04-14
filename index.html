@@ -24,7 +24,7 @@
     .syllable-buttons {
       margin-bottom: 20px;
     }
-    .syllable-buttons button {
+    .syllable-buttons button, .reset-button, .chakra-button {
       background-color: #4caf50;
       color: white;
       border: none;
@@ -34,8 +34,20 @@
       cursor: pointer;
       font-size: 16px;
     }
-    .syllable-buttons button:hover {
+    .syllable-buttons button:hover,
+    .chakra-button:hover {
       background-color: #43a047;
+    }
+    .reset-button {
+      background-color: #ff5722;
+    }
+    .reset-button:hover {
+      background-color: #e64a19;
+    }
+    select {
+      font-size: 16px;
+      padding: 6px;
+      margin-top: 10px;
     }
     .mantra-display {
       background-color: #ffffff;
@@ -51,25 +63,14 @@
     }
     .mantra-display p {
       font-size: 18px;
-    }
-    .reset-button {
-      background-color: #ff5722;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    .reset-button:hover {
-      background-color: #e64a19;
+      white-space: pre-wrap;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Lum’Asar — Язык Света</h1>
-    <p>Составь свою мантру, выбрав до трёх слогов:</p>
+    <p>Составь свою мантру или выбери чакру ниже:</p>
 
     <div class="syllable-buttons">
       <button onclick="addSyllable('Lu')">Lu (Свет)</button>
@@ -79,6 +80,18 @@
       <button onclick="addSyllable('Mi')">Mi (Истина)</button>
       <button onclick="addSyllable('Ke')">Ke (Вечность)</button>
     </div>
+
+    <select id="chakraSelect">
+      <option value="">— Выбери чакру —</option>
+      <option value="1">1. Муладхара (Корень)</option>
+      <option value="2">2. Свадхистана (Творчество)</option>
+      <option value="3">3. Манипура (Сила воли)</option>
+      <option value="4">4. Анахата (Сердце)</option>
+      <option value="5">5. Вишуддха (Речь)</option>
+      <option value="6">6. Аджна (Интуиция)</option>
+      <option value="7">7. Сахасрара (Корона)</option>
+    </select>
+    <button class="chakra-button" onclick="generateForChakra()">✨ Мантра для чакры</button>
 
     <div class="mantra-display">
       <h2>Твоя мантра:</h2>
@@ -97,6 +110,16 @@
       "Va": "Гармония, рост, развитие",
       "Mi": "Истина, вдохновение, прояснение",
       "Ke": "Вечность, целостность, тишина"
+    };
+
+    const chakraMantras = {
+      "1": { formula: "Ra-Lu", meaning: "Сила + Свет", freq: "~535 Гц", msg: "Я укоренён, я в безопасности. Я — опора." },
+      "2": { formula: "Sa-Va", meaning: "Любовь + Гармония", freq: "~635 Гц", msg: "Я творю из радости и потока." },
+      "3": { formula: "Ra-Mi", meaning: "Сила + Истина", freq: "~745 Гц", msg: "Моя воля чиста. Я действую осознанно." },
+      "4": { formula: "Sa-Ke", meaning: "Любовь + Вечность", freq: "~745 Гц", msg: "Я излучаю сострадание и единство." },
+      "5": { formula: "Sa-Mi", meaning: "Любовь + Истина", freq: "~690 Гц", msg: "Я говорю ясно. Моя речь — свет." },
+      "6": { formula: "Mi-Ke", meaning: "Истина + Вечность", freq: "~907 Гц", msg: "Я вижу ясно. Я доверяю внутреннему знанию." },
+      "7": { formula: "Lu-Ke", meaning: "Свет + Вечность", freq: "~697 Гц", msg: "Я соединён с Высшим. Я есмь." }
     };
 
     let selectedSyllables = [];
@@ -123,7 +146,22 @@
 
     function resetMantra() {
       selectedSyllables = [];
-      updateMantra();
+      document.getElementById('mantra-formula').textContent = 'Формула: ';
+      document.getElementById('mantra-meaning').textContent = 'Значение: ';
+      document.getElementById('chakraSelect').value = '';
+    }
+
+    function generateForChakra() {
+      const selected = document.getElementById('chakraSelect').value;
+      if (!selected || !chakraMantras[selected]) {
+        alert("Пожалуйста, выбери чакру из списка.");
+        return;
+      }
+
+      const data = chakraMantras[selected];
+      document.getElementById('mantra-formula').textContent = `Формула: ${data.formula}`;
+      document.getElementById('mantra-meaning').textContent =
+        `Значение: ${data.meaning}\nЧастота: ${data.freq}\nПослание: ${data.msg}`;
     }
   </script>
 </body>
