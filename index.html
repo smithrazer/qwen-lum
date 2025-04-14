@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lum’Asar Light Language</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 20px;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #4a90e2;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .syllable-buttons {
+            margin-bottom: 20px;
+        }
+        .syllable-buttons button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .syllable-buttons button:hover {
+            background-color: #43a047;
+        }
+        .mantra-display {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        .mantra-display h2 {
+            margin-top: 0;
+        }
+        .mantra-display p {
+            font-size: 18px;
+        }
+        .reset-button {
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .reset-button:hover {
+            background-color: #e64a19;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lum’Asar: The Language of Light</h1>
+        <p>Create your mantra by selecting syllables below:</p>
+
+        <!-- Buttons for syllables -->
+        <div class="syllable-buttons">
+            <button onclick="addSyllable('Lu')">Lu (Light)</button>
+            <button onclick="addSyllable('Sa')">Sa (Love)</button>
+            <button onclick="addSyllable('Ra')">Ra (Power)</button>
+            <button onclick="addSyllable('Va')">Va (Harmony)</button>
+            <button onclick="addSyllable('Mi')">Mi (Truth)</button>
+            <button onclick="addSyllable('Ke')">Ke (Eternity)</button>
+        </div>
+
+        <!-- Display the selected mantra -->
+        <div class="mantra-display">
+            <h2>Your Mantra:</h2>
+            <p id="mantra-formula">Formula: </p>
+            <p id="mantra-meaning">Meaning: </p>
+        </div>
+
+        <!-- Reset button -->
+        <button class="reset-button" onclick="resetMantra()">Reset Mantra</button>
+    </div>
+
+    <script>
+        // Variables to store the selected syllables and their meanings
+        const syllables = {
+            "Lu": "Light, beginning, birth",
+            "Sa": "Love, connection, flow",
+            "Ra": "Power, liberation, will",
+            "Va": "Harmony, growth, balance",
+            "Mi": "Truth, inspiration, clarity",
+            "Ke": "Eternity, wholeness, silence"
+        };
+
+        let selectedSyllables = [];
+
+        // Function to add a syllable to the mantra
+        function addSyllable(syllable) {
+            if (selectedSyllables.length < 3) { // Limit to 3 syllables
+                selectedSyllables.push(syllable);
+                updateMantra();
+            } else {
+                alert("You can only select up to 3 syllables for a mantra.");
+            }
+        }
+
+        // Function to update the mantra display
+        function updateMantra() {
+            const formulaDisplay = document.getElementById('mantra-formula');
+            const meaningDisplay = document.getElementById('mantra-meaning');
+
+            // Build the formula and meaning strings
+            const formula = selectedSyllables.join('-');
+            const meaning = selectedSyllables.map(s => syllables[s]).join(' + ');
+
+            // Update the display
+            formulaDisplay.textContent = `Formula: ${formula}`;
+            meaningDisplay.textContent = `Meaning: ${meaning}`;
+        }
+
+        // Function to reset the mantra
+        function resetMantra() {
+            selectedSyllables = [];
+            updateMantra();
+        }
+    </script>
+</body>
+</html>
