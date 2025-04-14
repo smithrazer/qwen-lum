@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Qwen-Lum v1.7 — Лунный Пульс</title>
+  <title>Qwen-Lum v1.8 — Союзники Света</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -46,11 +46,19 @@
       font-size: 36px;
       margin: 10px 0;
     }
+    .allies-text {
+      font-size: 16px;
+      margin-top: 10px;
+      background: #ffffff;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Qwen-Lum — Лунный Пульс</h1>
+    <h1>Qwen-Lum — Союзники Света</h1>
 
     <label for="systemSelect">Система чакр:</label>
     <select id="systemSelect" onchange="updateChakraList()">
@@ -67,7 +75,6 @@
     <label for="chakraDate">Или введи дату:</label>
     <input type="date" id="chakraDate" />
     <button onclick="generateByDate()">🔮 Мантра по дате</button>
-
     <button onclick="generateByMoon()">🌙 Лунная мантра дня</button>
 
     <div id="output" class="chakra-block">
@@ -75,9 +82,15 @@
       <p id="mantraText">—</p>
       <div class="rune-symbol" id="runeSymbol"> </div>
     </div>
+
+    <div id="allies-block" class="chakra-block">
+      <h3>🌿 Союзники дня</h3>
+      <p id="allies-text" class="allies-text">—</p>
+    </div>
+  </div>
 <script>
+// 🔹 Все данные чакр (сокращённо вставлены для примера)
 const chakraSystems = {
-  "7": [ /* ... как в v1.6, можешь вставить сюда свои данные */ ],
   "9": [
     { name: "Исток", formula: "Lu-Ra", meaning: "Свет + Сила", freq: "535 Гц", color: "#d32f2f", msg: "Я слышу поток Земли.", rune: "ᚢ", runeMeaning: "Уруз — сила рода" },
     { name: "Зарод", formula: "Va-Sa", meaning: "Гармония + Любовь", freq: "635 Гц", color: "#f57c00", msg: "Я вижу путь радости.", rune: "ᚹ", runeMeaning: "Вуньо — вдохновение" },
@@ -88,74 +101,129 @@ const chakraSystems = {
     { name: "Устье", formula: "Mi-Sa", meaning: "Истина + Любовь", freq: "690 Гц", color: "#512da8", msg: "Я помню слово Света.", rune: "ᚨ", runeMeaning: "Ансуз — божественная речь" },
     { name: "Чело", formula: "Lu-Mi", meaning: "Свет + Истина", freq: "792 Гц", color: "#7b1fa2", msg: "Я хочу и вижу ясно.", rune: "ᛇ", runeMeaning: "Эйваз — внутренняя сила" },
     { name: "Родник", formula: "Lu-Ke", meaning: "Свет + Вечность", freq: "963 Гц", color: "#9c27b0", msg: "Я могу. Я соединён с Истоком.", rune: "ᛜ", runeMeaning: "Ингуз — завершение цикла" }
-  ]
+  ],
+  "7": [] // сюда можно вставить восточную систему при желании
 };
 
+// 🔹 Союзники
+const moonPhases = ['Новолуние', 'Растущая', 'Полнолуние', 'Убывающая'];
+const elements = ['Огонь', 'Вода', 'Воздух', 'Земля'];
+const elementDescriptions = {
+  'Огонь': 'энергия действия, очищения и силы',
+  'Вода': 'глубина, интуиция, очищение через чувства',
+  'Воздух': 'движение, ясность, вдохновение',
+  'Земля': 'устойчивость, род, тело и практика'
+};
+const totems = ['Волк','Сокол','Медведь','Олень','Змей','Кошка','Черепаха','Лиса','Конь'];
+const totemDescriptions = {
+  'Волк':'проводник между мирами, дух верности и прозрения',
+  'Сокол':'ясное видение, высота духа',
+  'Медведь':'сила рода, интуитивная мощь',
+  'Олень':'благородство, интуиция, лёгкость пути',
+  'Змей':'трансформация, инстинкты, древняя сила',
+  'Кошка':'грация, тайна, защита в темноте',
+  'Черепаха':'хранитель рода, медленное, но верное движение',
+  'Лиса':'мудрость, адаптация, хитрость',
+  'Конь':'свобода духа, движение и верность'
+};
+const archetypes = ['Проводник Света','Хранитель','Целитель','Исследователь','Воин','Мудрец','Строитель','Оракул','Искатель'];
+const archetypeMessages = {
+  'Проводник Света': 'Я веду тебя сквозь тьму к твоей собственной Истине.',
+  'Хранитель': 'Я оберегаю тебя, чтобы ты мог раскрыться без страха.',
+  'Целитель': 'Я чувствую твои раны и помогаю их исцелить.',
+  'Исследователь': 'Я веду тебя в неизведанное, чтобы ты стал больше, чем был.',
+  'Воин': 'Я даю тебе силу встать и идти, несмотря ни на что.',
+  'Мудрец': 'Я делюсь знанием, когда ты готов принять его.',
+  'Строитель': 'Я помогаю тебе воплотить мечту в реальность.',
+  'Оракул': 'Я говорю знаками, слушай — и ты услышишь.',
+  'Искатель': 'Я напоминаю, что путь — важнее цели.'
+};
+
+// 🔹 Вспомогательные функции
+function getEmoji(elem) {
+  return { 'Огонь': '🔥','Вода': '🌊','Воздух': '🌬','Земля': '🌿' }[elem] || '';
+}
+function getTotemEmoji(totem) {
+  return {
+    'Волк': '🐺','Сокол': '🦅','Медведь': '🐻','Олень': '🦌','Змей': '🐍','Кошка': '🐈','Черепаха': '🐢','Лиса': '🦊','Конь': '🐴'
+  }[totem] || '🐾';
+}
+function getMoonPhase(date) {
+  const lp = 2551443;
+  const new_moon = new Date('2001-01-24T13:35:00Z');
+  const phaseTime = ((date.getTime() - new_moon.getTime()) / 1000) % lp;
+  if (phaseTime < lp * 0.03 || phaseTime > lp * 0.97) return 'Новолуние';
+  else if (phaseTime < lp * 0.47) return 'Растущая';
+  else if (phaseTime < lp * 0.53) return 'Полнолуние';
+  else return 'Убывающая';
+}
+
+// 🔹 Отображение чакры
+function displayChakra(chakra) {
+  document.getElementById('output').style.backgroundColor = chakra.color;
+  document.getElementById('mantraText').textContent =
+    `Чакра: ${chakra.name}\nФормула: ${chakra.formula}\nЗначение: ${chakra.meaning}\nЧастота: ${chakra.freq}\nПослание: ${chakra.msg}`;
+  document.getElementById('runeSymbol').textContent = `${chakra.rune} — ${chakra.runeMeaning}`;
+}
+
+// 🔹 Отображение союзников
+function generateAllies(date = new Date()) {
+  const moonPhase = getMoonPhase(date);
+  const dayNumber = Math.floor((date - new Date('2012-12-22')) / (1000 * 60 * 60 * 24));
+  const element = elements[dayNumber % elements.length];
+  const totem = totems[dayNumber % totems.length];
+  const archetype = archetypes[dayNumber % archetypes.length];
+
+  const text = `🌕 Фаза Луны: ${moonPhase}\n${getEmoji(element)} Стихия: ${element} — ${elementDescriptions[element]}\n${getTotemEmoji(totem)} Тотем: ${totem} — ${totemDescriptions[totem]}\n👁 Архетип: ${archetype} — \"${archetypeMessages[archetype]}\"`;
+  document.getElementById('allies-text').textContent = text;
+}
+
+// 🔹 Выбор вручную
+function generateMantra() {
+  const system = document.getElementById('systemSelect').value;
+  const chakraIndex = document.getElementById('chakraSelect').value;
+  const chakra = chakraSystems[system][chakraIndex];
+  displayChakra(chakra);
+  generateAllies();
+}
+
+// 🔹 По дате
+function generateByDate() {
+  const input = document.getElementById('chakraDate').value;
+  if (!input) return alert('Пожалуйста, выбери дату.');
+  const date = new Date(input);
+  const diffDays = Math.floor((date - new Date('2012-12-22')) / (1000 * 60 * 60 * 24));
+  const index = diffDays % 9;
+  const chakra = chakraSystems['9'][index];
+  displayChakra(chakra);
+  generateAllies(date);
+}
+
+// 🔹 По фазе Луны
+function generateByMoon() {
+  const date = new Date();
+  const phase = getMoonPhase(date);
+  let index = 0;
+  if (phase === 'Растущая') index = 4;
+  else if (phase === 'Полнолуние') index = 8;
+  else if (phase === 'Убывающая') index = 2;
+  const chakra = chakraSystems['9'][index];
+  chakra.msg += `\n(Фаза Луны: ${phase})`;
+  displayChakra(chakra);
+  generateAllies(date);
+}
+
+// 🔹 Обновление списка
 function updateChakraList() {
   const system = document.getElementById('systemSelect').value;
   const chakraSelect = document.getElementById('chakraSelect');
-  chakraSelect.innerHTML = "";
+  chakraSelect.innerHTML = '';
   chakraSystems[system].forEach((chakra, index) => {
     const option = document.createElement('option');
     option.value = index;
     option.textContent = chakra.name;
     chakraSelect.appendChild(option);
   });
-}
-
-function displayChakra(chakra) {
-  const output = document.getElementById('output');
-  output.style.backgroundColor = chakra.color;
-  document.getElementById('mantraText').textContent =
-    `Чакра: ${chakra.name}\nФормула: ${chakra.formula}\nЗначение: ${chakra.meaning}\nЧастота: ${chakra.freq}\nПослание: ${chakra.msg}`;
-  document.getElementById('runeSymbol').textContent =
-    `${chakra.rune} — ${chakra.runeMeaning}`;
-}
-
-function generateMantra() {
-  const system = document.getElementById('systemSelect').value;
-  const chakraIndex = document.getElementById('chakraSelect').value;
-  const chakra = chakraSystems[system][chakraIndex];
-  displayChakra(chakra);
-}
-
-function generateByDate() {
-  const input = document.getElementById('chakraDate').value;
-  if (!input) return alert("Пожалуйста, выбери дату.");
-  const base = new Date("2012-12-22");
-  const selected = new Date(input);
-  const diffDays = Math.floor((selected - base) / (1000 * 60 * 60 * 24));
-  const index = diffDays % 9;
-  const chakra = chakraSystems["9"][index];
-  displayChakra(chakra);
-}
-
-// 🌙 ФАЗА ЛУНЫ + ЧАКРА
-function generateByMoon() {
-  const today = new Date();
-  const phase = getMoonPhase(today);
-  let index;
-
-  if (phase === 'Новолуние') index = 0;          // Исток
-  else if (phase === 'Растущая') index = 4;      // Лада
-  else if (phase === 'Полнолуние') index = 8;    // Родник
-  else index = 2;                                // Живот
-
-  const chakra = chakraSystems["9"][index];
-  chakra.msg += `\n(Фаза Луны: ${phase})`;
-  displayChakra(chakra);
-}
-
-// Лунная фаза (грубое приближение по дате)
-function getMoonPhase(date) {
-  const lp = 2551443; // средняя длительность лунного цикла в секундах
-  const new_moon = new Date('2001-01-24T13:35:00Z'); // дата известного новолуния
-  const phaseTime = ((date.getTime() - new_moon.getTime()) / 1000) % lp;
-
-  if (phaseTime < lp * 0.03 || phaseTime > lp * 0.97) return 'Новолуние';
-  else if (phaseTime < lp * 0.47) return 'Растущая';
-  else if (phaseTime < lp * 0.53) return 'Полнолуние';
-  else return 'Убывающая';
 }
 
 // Инициализация
