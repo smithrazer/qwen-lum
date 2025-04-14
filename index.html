@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Qwen-Lum v1.4 — Перекрёсток Чакр</title>
+  <title>Qwen-Lum v1.6 — Полное Созвучие</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -21,7 +21,7 @@
       flex-direction: column;
       align-items: center;
     }
-    select, button {
+    select, button, input[type="date"] {
       font-size: 16px;
       margin: 5px;
       padding: 8px 12px;
@@ -42,11 +42,15 @@
       font-size: 18px;
       white-space: pre-wrap;
     }
+    .rune-symbol {
+      font-size: 36px;
+      margin: 10px 0;
+    }
   </style>
 </head>
 <body>
 <div class="container">
-  <h1>Qwen-Lum — Мантра по Чакре</h1>
+  <h1>Qwen-Lum — Полное Созвучие</h1>
 
   <label for="systemSelect">Система чакр:</label>
   <select id="systemSelect" onchange="updateChakraList()">
@@ -56,35 +60,42 @@
 
   <label for="chakraSelect">Выбери чакру:</label>
   <select id="chakraSelect"></select>
-  <button onclick="generateMantra()">✨ Получить мантру</button>
+  <button onclick="generateMantra()">✨ Мантра по выбору</button>
+
+  <hr style="width: 100%; max-width: 600px; margin: 20px 0;">
+
+  <label for="chakraDate">Или введи дату:</label>
+  <input type="date" id="chakraDate" />
+  <button onclick="generateByDate()">🔮 Мантра по дате</button>
 
   <div id="output" class="chakra-block">
     <h2>Мантра:</h2>
     <p id="mantraText">—</p>
+    <div class="rune-symbol" id="runeSymbol"> </div>
   </div>
 </div>
 
 <script>
 const chakraSystems = {
   "7": [
-    { name: "Муладхара", formula: "Ra-Lu", meaning: "Сила + Свет", freq: "535 Гц", color: "#e57373", msg: "Я укоренён. Я — опора." },
-    { name: "Свадхистана", formula: "Sa-Va", meaning: "Любовь + Гармония", freq: "635 Гц", color: "#f06292", msg: "Я творю в радости и потоке." },
-    { name: "Манипура", formula: "Ra-Mi", meaning: "Сила + Истина", freq: "745 Гц", color: "#ffb74d", msg: "Моя воля чиста." },
-    { name: "Анахата", formula: "Sa-Ke", meaning: "Любовь + Вечность", freq: "745 Гц", color: "#81c784", msg: "Я излучаю сострадание." },
-    { name: "Вишуддха", formula: "Sa-Mi", meaning: "Любовь + Истина", freq: "690 Гц", color: "#64b5f6", msg: "Моя речь — свет." },
-    { name: "Аджна", formula: "Mi-Ke", meaning: "Истина + Вечность", freq: "907 Гц", color: "#9575cd", msg: "Я вижу ясно." },
-    { name: "Сахасрара", formula: "Lu-Ke", meaning: "Свет + Вечность", freq: "697 Гц", color: "#ce93d8", msg: "Я соединён с Высшим." }
+    { name: "Муладхара", formula: "Ra-Lu", meaning: "Сила + Свет", freq: "535 Гц", color: "#e57373", msg: "Я укоренён. Я — опора.", rune: "ᚢ", runeMeaning: "Уруз — сила и устойчивость" },
+    { name: "Свадхистана", formula: "Sa-Va", meaning: "Любовь + Гармония", freq: "635 Гц", color: "#f06292", msg: "Я творю в радости и потоке.", rune: "ᚹ", runeMeaning: "Вуньо — радость и поток" },
+    { name: "Манипура", formula: "Ra-Mi", meaning: "Сила + Истина", freq: "745 Гц", color: "#ffb74d", msg: "Моя воля чиста.", rune: "ᛞ", runeMeaning: "Дагаз — равновесие и действие" },
+    { name: "Анахата", formula: "Sa-Ke", meaning: "Любовь + Вечность", freq: "745 Гц", color: "#81c784", msg: "Я излучаю сострадание.", rune: "ᚷ", runeMeaning: "Гебо — союз и сердце" },
+    { name: "Вишуддха", formula: "Sa-Mi", meaning: "Любовь + Истина", freq: "690 Гц", color: "#64b5f6", msg: "Моя речь — свет.", rune: "ᚨ", runeMeaning: "Ансуз — слово и мудрость" },
+    { name: "Аджна", formula: "Mi-Ke", meaning: "Истина + Вечность", freq: "907 Гц", color: "#9575cd", msg: "Я вижу ясно.", rune: "ᛇ", runeMeaning: "Эйваз — связь миров" },
+    { name: "Сахасрара", formula: "Lu-Ke", meaning: "Свет + Вечность", freq: "697 Гц", color: "#ce93d8", msg: "Я соединён с Высшим.", rune: "ᛜ", runeMeaning: "Ингуз — завершение и дух" }
   ],
   "9": [
-    { name: "Исток", formula: "Lu-Ra", meaning: "Свет + Сила", freq: "535 Гц", color: "#d32f2f", msg: "Я слышу поток Земли." },
-    { name: "Зарод", formula: "Va-Sa", meaning: "Гармония + Любовь", freq: "635 Гц", color: "#f57c00", msg: "Я вижу путь радости." },
-    { name: "Живот", formula: "Ra-Mi", meaning: "Сила + Истина", freq: "745 Гц", color: "#fbc02d", msg: "Я ощущаю уверенность." },
-    { name: "Перси", formula: "Sa-Va", meaning: "Любовь + Гармония", freq: "675 Гц", color: "#388e3c", msg: "Я чувствую цельность." },
-    { name: "Лада", formula: "Sa-Ke", meaning: "Любовь + Вечность", freq: "745 Гц", color: "#00796b", msg: "Я верю и доверяю." },
-    { name: "Леля", formula: "Mi-Va", meaning: "Истина + Гармония", freq: "795 Гц", color: "#0288d1", msg: "Я знаю истину сердца." },
-    { name: "Устье", formula: "Mi-Sa", meaning: "Истина + Любовь", freq: "690 Гц", color: "#512da8", msg: "Я помню слово Света." },
-    { name: "Чело", formula: "Lu-Mi", meaning: "Свет + Истина", freq: "792 Гц", color: "#7b1fa2", msg: "Я хочу и вижу ясно." },
-    { name: "Родник", formula: "Lu-Ke", meaning: "Свет + Вечность", freq: "963 Гц", color: "#9c27b0", msg: "Я могу. Я соединён с Истоком." }
+    { name: "Исток", formula: "Lu-Ra", meaning: "Свет + Сила", freq: "535 Гц", color: "#d32f2f", msg: "Я слышу поток Земли.", rune: "ᚢ", runeMeaning: "Уруз — сила рода" },
+    { name: "Зарод", formula: "Va-Sa", meaning: "Гармония + Любовь", freq: "635 Гц", color: "#f57c00", msg: "Я вижу путь радости.", rune: "ᚹ", runeMeaning: "Вуньо — вдохновение" },
+    { name: "Живот", formula: "Ra-Mi", meaning: "Сила + Истина", freq: "745 Гц", color: "#fbc02d", msg: "Я ощущаю уверенность.", rune: "ᛞ", runeMeaning: "Дагаз — равновесие" },
+    { name: "Перси", formula: "Sa-Va", meaning: "Любовь + Гармония", freq: "675 Гц", color: "#388e3c", msg: "Я чувствую цельность.", rune: "ᚷ", runeMeaning: "Гебо — дар" },
+    { name: "Лада", formula: "Sa-Ke", meaning: "Любовь + Вечность", freq: "745 Гц", color: "#00796b", msg: "Я верю и доверяю.", rune: "ᛗ", runeMeaning: "Манназ — человек и род" },
+    { name: "Леля", formula: "Mi-Va", meaning: "Истина + Гармония", freq: "795 Гц", color: "#0288d1", msg: "Я знаю истину сердца.", rune: "ᛉ", runeMeaning: "Альгиз — защита и интуиция" },
+    { name: "Устье", formula: "Mi-Sa", meaning: "Истина + Любовь", freq: "690 Гц", color: "#512da8", msg: "Я помню слово Света.", rune: "ᚨ", runeMeaning: "Ансуз — божественная речь" },
+    { name: "Чело", formula: "Lu-Mi", meaning: "Свет + Истина", freq: "792 Гц", color: "#7b1fa2", msg: "Я хочу и вижу ясно.", rune: "ᛇ", runeMeaning: "Эйваз — внутренняя сила" },
+    { name: "Родник", formula: "Lu-Ke", meaning: "Свет + Вечность", freq: "963 Гц", color: "#9c27b0", msg: "Я могу. Я соединён с Истоком.", rune: "ᛜ", runeMeaning: "Ингуз — завершение цикла" }
   ]
 };
 
@@ -92,11 +103,10 @@ function updateChakraList() {
   const system = document.getElementById('systemSelect').value;
   const chakraSelect = document.getElementById('chakraSelect');
   chakraSelect.innerHTML = "";
-
   chakraSystems[system].forEach((chakra, index) => {
     const option = document.createElement('option');
     option.value = index;
-    option.textContent = `${chakra.name}`;
+    option.textContent = chakra.name;
     chakraSelect.appendChild(option);
   });
 }
@@ -105,13 +115,30 @@ function generateMantra() {
   const system = document.getElementById('systemSelect').value;
   const chakraIndex = document.getElementById('chakraSelect').value;
   const chakra = chakraSystems[system][chakraIndex];
-  const output = document.getElementById('output');
-
-  output.style.backgroundColor = chakra.color;
-  document.getElementById('mantraText').textContent = `Формула: ${chakra.formula}\nЗначение: ${chakra.meaning}\nЧастота: ${chakra.freq}\nПослание: ${chakra.msg}`;
+  displayChakra(chakra);
 }
 
-// Инициализация при загрузке
+function generateByDate() {
+  const input = document.getElementById('chakraDate').value;
+  if (!input) return alert("Пожалуйста, выбери дату.");
+  const base = new Date("2012-12-22");
+  const selected = new Date(input);
+  const diffDays = Math.floor((selected - base) / (1000 * 60 * 60 * 24));
+  const index = diffDays % 9;
+  const chakra = chakraSystems["9"][index];
+  displayChakra(chakra);
+}
+
+function displayChakra(chakra) {
+  const output = document.getElementById('output');
+  output.style.backgroundColor = chakra.color;
+  document.getElementById('mantraText').textContent =
+    `Чакра: ${chakra.name}\nФормула: ${chakra.formula}\nЗначение: ${chakra.meaning}\nЧастота: ${chakra.freq}\nПослание: ${chakra.msg}`;
+  document.getElementById('runeSymbol').textContent =
+    `${chakra.rune} — ${chakra.runeMeaning}`;
+}
+
+// Инициализация
 updateChakraList();
 </script>
 </body>
